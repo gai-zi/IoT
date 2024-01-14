@@ -34,8 +34,8 @@ float Temp;
 int state;
 volatile byte i=0;
 
-String inputString = "";     // 用于存储接收到的数据
-bool stringComplete = false; // 是否接收到完整的字符串
+bool isFanOn = false; // 跟踪风扇状态的变量
+bool isWaterPumpOn = false
 
 #define   Light_Threshold                1000    //光敏阈值，控制灯
 #define   Rain_Threshold                 100    //水滴阈值
@@ -102,7 +102,7 @@ void Date_Display()
   display.setTextSize(1); 
   display.setTextColor(WHITE);
   display.setCursor(0,0); 
-  display.println("Model:");
+  display.println("SMART FARM:");
   display.setCursor(98,0); 
   display.println("BLUE");
   
@@ -259,7 +259,6 @@ void Blue_Model()
       case  '6':  mp3_play (15);delay(1500);                  
                   while(1)
                   {
-                    MP3_Player();
                     Data_Read();
                     Date_Display();
                     Auto_Model();
@@ -280,41 +279,32 @@ void Blue_Model()
     if(mySerial.available() > 0){ 
       state = mySerial.read();
       switch(state){
-        case  '0':  digitalWrite(LED_Pin, HIGH);mp3_play (8);delay(1500);    break;
-        case  '1':  digitalWrite(LED_Pin, LOW);mp3_play (9);delay(1500);   break;
-        case  '9':  mySerial.print("Light: ");mySerial.println(Light);    break;
+        case  '0':  
+          if(isFanOn){
+            digitalWrite(LED_Pin, LOW);delay(1500);    break;
+            isFanOn = false;
+          }
+          else{
+            digitalWrite(FAN_Pin, HIGH);delay(1500);    break;
+            isFanOn = true;
+          }
+        case  '1': {
+          if(isWaterPumpOn){
+            digitalWrite(Water_PUMP, LOW);delay(1500);    break;
+            isWaterPumpOn = false;
+          }
+          else{
+            digitalWrite(Water_PUMP, HIGH);delay(1500);    break;
+            isWaterPumpOn = true;
+          }
+        }
+        case  '2':  mySerial.print("Light: ");mySerial.println(Light);    break;
+        case  '3':  mySerial.print("Rain: ");mySerial.println(Rain);    break;
+        case  '4':  mySerial.print("Water Level: ");mySerial.println(Water_level);    break;
+        case  '5':  mySerial.print("Soil: ");mySerial.println(Soil_Moisture);    break;
+        case  '6':  mySerial.print("Temp: ");mySerial.println(Temp);    break;
+        case  '7':  mySerial.print("humidity: ");mySerial.println(Humi);    break;
       }
-      
-//      char inChar = (char)mySerial.read();
-//      inputString += inChar;
-//      if (inChar == '\n') {
-//        stringComplete = true;
-//      }
-//      // 检查是否接收到完整的字符串
-//      if (stringComplete) {
-//        // 比较输入字符串并执行相应动作
-//        if (inputString.startsWith("Light")) {
-//          mySerial.print("Light: ");
-//          mySerial.println(Light);
-//        } else if (inputString.startsWith("Rain")) {
-//          mySerial.print("Rain: ");
-//          mySerial.println(Rain);
-//        } else if (inputString.startsWith("Water")) {
-//          mySerial.print("Water: ");
-//          mySerial.println(Rain);
-//        } else if (inputString.startsWith("Soil")) {
-//          mySerial.print("Soil: ");
-//          mySerial.println(Rain);
-//        } else if (inputString.startsWith("Temp")) {
-//          mySerial.print("Temp: ");
-//          mySerial.println(Rain);
-//        } else if (inputString.startsWith("Humi")) {
-//          mySerial.print("Humi: ");
-//          mySerial.println(Rain);
-//        } 
-//        // 清除输入字符串，准备下一次读取
-//        inputString = "";
-//        stringComplete = false;
-//      }
+    
   }
 }
