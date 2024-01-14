@@ -35,7 +35,8 @@ int state;
 volatile byte i=0;
 
 bool isFanOn = false; // 跟踪风扇状态的变量
-bool isWaterPumpOn = false
+bool isWaterPumpOn = false;
+bool isLEDOn = false;
 
 #define   Light_Threshold                1000    //光敏阈值，控制灯
 #define   Rain_Threshold                 100    //水滴阈值
@@ -280,13 +281,13 @@ void Blue_Model()
       state = mySerial.read();
       switch(state){
         case  '0':  
-          if(isFanOn){
+          if(isLEDOn){
             digitalWrite(LED_Pin, LOW);delay(1500);    break;
-            isFanOn = false;
+            isLEDOn = false;
           }
           else{
-            digitalWrite(FAN_Pin, HIGH);delay(1500);    break;
-            isFanOn = true;
+            digitalWrite(LED_Pin, HIGH);delay(1500);    break;
+            isLEDOn = true;
           }
         case  '1': {
           if(isWaterPumpOn){
@@ -298,12 +299,22 @@ void Blue_Model()
             isWaterPumpOn = true;
           }
         }
-        case  '2':  mySerial.print("Light: ");mySerial.println(Light);    break;
-        case  '3':  mySerial.print("Rain: ");mySerial.println(Rain);    break;
-        case  '4':  mySerial.print("Water Level: ");mySerial.println(Water_level);    break;
-        case  '5':  mySerial.print("Soil: ");mySerial.println(Soil_Moisture);    break;
-        case  '6':  mySerial.print("Temp: ");mySerial.println(Temp);    break;
-        case  '7':  mySerial.print("humidity: ");mySerial.println(Humi);    break;
+        case  '2': {
+          if(isFanOn){
+            digitalWrite(Fan_Pin, LOW);delay(1500);    break;
+            isFanOn = false;
+          }
+          else{
+            digitalWrite(Fan_Pin, HIGH);delay(1500);    break;
+            isFanOn = true;
+          }
+        }
+        case  '3':  mySerial.print("Light: ");mySerial.println(Light);    break;
+        case  '4':  mySerial.print("Rain: ");mySerial.println(Rain);    break;
+        case  '5':  mySerial.print("Water Level: ");mySerial.println(Water_level);    break;
+        case  '6':  mySerial.print("Soil: ");mySerial.println(Soil_Moisture);    break;
+        case  '7':  mySerial.print("Temp: ");mySerial.println(Temp);    break;
+        case  '8':  mySerial.print("humidity: ");mySerial.println(Humi);    break;
       }
     
   }
