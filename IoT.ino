@@ -10,7 +10,7 @@
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
 #endif
 
-Adafruit_SSD1306 display(OLED_RESET);
+   display(OLED_RESET);
 SoftwareSerial mySerial(12, 13);
 dht DHT;  
 
@@ -280,41 +280,18 @@ void Blue_Model()
     if(mySerial.available() > 0){ 
       state = mySerial.read();
       switch(state){
-        case  '0':  
-          if(isLEDOn){
-            digitalWrite(LED_Pin, LOW);delay(1500);    break;
-            isLEDOn = false;
-          }
-          else{
-            digitalWrite(LED_Pin, HIGH);delay(1500);    break;
-            isLEDOn = true;
-          }
-        case  '1': {
-          if(isWaterPumpOn){
-            digitalWrite(Water_PUMP, LOW);delay(1500);    break;
-            isWaterPumpOn = false;
-          }
-          else{
-            digitalWrite(Water_PUMP, HIGH);delay(1500);    break;
-            isWaterPumpOn = true;
-          }
-        }
-        case  '2': {
-          if(isFanOn){
-            digitalWrite(Fan_Pin, LOW);delay(1500);    break;
-            isFanOn = false;
-          }
-          else{
-            digitalWrite(Fan_Pin, HIGH);delay(1500);    break;
-            isFanOn = true;
-          }
-        }
-        case  '3':  mySerial.print("Light: ");mySerial.println(Light);    break;
-        case  '4':  mySerial.print("Rain: ");mySerial.println(Rain);    break;
-        case  '5':  mySerial.print("Water Level: ");mySerial.println(Water_level);    break;
-        case  '6':  mySerial.print("Soil: ");mySerial.println(Soil_Moisture);    break;
-        case  '7':  mySerial.print("Temp: ");mySerial.println(Temp);    break;
-        case  '8':  mySerial.print("humidity: ");mySerial.println(Humi);    break;
+        case  '0':  digitalWrite(LED_Pin, HIGH);delay(1500);    break;
+        case  '1':  digitalWrite(LED_Pin, LOW);delay(1500);   break;
+        case  '2':  digitalWrite(LED_Pin, HIGH);delay(1500);    break;
+        case  '3':  digitalWrite(LED_Pin, LOW);delay(1500);    break;
+        case  '4':  digitalWrite(Water_Pin, HIGH);delay(1500);    break;
+        case  '5':  digitalWrite(Water_Pin, LOW);delay(1500);    break;
+        case  '6':  mySerial.print("Light: ");mySerial.println(Light);    break;
+        case  '7':  mySerial.print("Rain: ");mySerial.println(Rain);    break;
+        case  '8':  mySerial.print("Water Level: ");mySerial.println(Water_level);    break;
+        case  '9':  mySerial.print("Soil: ");mySerial.println(Soil_Moisture);    break;
+        case  'a':  mySerial.print("Temp: ");mySerial.println(Temp);    break;
+        case  'b':  mySerial.print("humidity: ");mySerial.println(Humi);    break;
       }
     
   }
