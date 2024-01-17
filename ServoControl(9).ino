@@ -1,3 +1,6 @@
+#include <Adafruit_SSD1306.h>
+#include <splash.h>
+
 #include <SoftwareSerial.h>
 #include <LiquidCrystal_I2C.h>
 #include "dht.h"
@@ -10,14 +13,14 @@
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
 #endif
 
-   display(OLED_RESET);
+Adafruit_SSD1306 display(OLED_RESET);
 SoftwareSerial mySerial(12, 13);
 dht DHT;  
 
 #define   Water_PUMP          2
 #define   Fan_Pin             3
 #define   DHT11_PIN           7 
-#define   IR_PIN              8
+#define   IR_PIN              8  //红外
 #define   LED_Pin             10
 #define   Voice_Pin           11
 #define   Light_Pin           A0 
@@ -34,16 +37,12 @@ float Temp;
 int state;
 volatile byte i=0;
 
-bool isFanOn = false; // 跟踪风扇状态的变量
-bool isWaterPumpOn = false;
-bool isLEDOn = false;
-
 #define   Light_Threshold                1000    //光敏阈值，控制灯
 #define   Rain_Threshold                 100    //水滴阈值
-#define   Water_level_Threshold          100    //水位阈值  控制扬声器
+#define   Water_level_Threshold          50    //水位阈值  控制扬声器
 #define   Soil_Moisture_Threshold        100    //土壤湿度阈值，控制水泵
-#define   Temp_Threshold                 40    //温度阈值，控制风扇
-#define   Humi_Threshold                 70    //湿度阈值，控制风扇
+#define   Temp_Threshold                 20    //温度阈值，控制风扇
+#define   Humi_Threshold                 50    //湿度阈值，控制风扇
 #define   VOL                            20     // 声音音量
 
 void setup()
@@ -55,7 +54,7 @@ void loop()
 {
   Data_Read();
   Date_Display();
-  Blue_Model();    
+  Blue_Model();
 }
 
 void IO_Init()
@@ -63,8 +62,8 @@ void IO_Init()
   pinMode(Fan_Pin, OUTPUT);
   pinMode(LED_Pin, OUTPUT);
   pinMode(Water_PUMP, OUTPUT);
-  digitalWrite(Fan_Pin, LOW);
-  digitalWrite(LED_Pin, LOW);
+  digitalWrite(Fan_Pin, HIGH);
+  digitalWrite(LED_Pin, HIGH);
   digitalWrite(Water_PUMP, LOW);
   Serial.begin(9600);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); 
@@ -103,7 +102,7 @@ void Date_Display()
   display.setTextSize(1); 
   display.setTextColor(WHITE);
   display.setCursor(0,0); 
-  display.println("SMART FARM:");
+  display.println("Model:");
   display.setCursor(98,0); 
   display.println("BLUE");
   
@@ -248,24 +247,33 @@ void MP3_Player()
 
 void Blue_Model()
 {
-  if(Serial.available() > 0){ 
-    state = Serial.read();
-    switch(state){
-      case  '0':  digitalWrite(LED_Pin, HIGH);mp3_play (8);delay(1500);    break;
-      case  '1':  digitalWrite(LED_Pin, LOW);mp3_play (9);delay(1500);   break;
-      case  '2':  digitalWrite(Water_PUMP, HIGH);mp3_play (12);delay(1500);                break;
-      case  '3':  digitalWrite(Water_PUMP, LOW);mp3_play (13);delay(1500);               break;
-      case  '4':  digitalWrite(Fan_Pin, HIGH);mp3_play (10);delay(1500);                   break;
-      case  '5':  digitalWrite(Fan_Pin, LOW);mp3_play (11);delay(1500);                  break;
-      case  '6':  mp3_play (15);delay(1500);                  
+//  if(Serial.available()){ 
+//    state = Serial.read();
+//    Serial.println(Water_level);
+//    Serial.println("this is working");
+//
+//  }
+    if (mySerial.available()) {
+      char receivedChar = mySerial.read(); // 读取字符
+      Serial.print("Received: ");
+      Serial.println(receivedChar);
+      switch(receivedChar){
+          case  '0':  digitalWrite(LED_Pin, HIGH);delay(1500);    break;
+          case  '1':  digitalWrite(LED_Pin, LOW);delay(1500);   break;
+          case  '2':  digitalWrite(Water_PUMP, HIGH);delay(1500);                break;
+          case  '3':  digitalWrite(Water_PUMP, LOW);delay(1500);               break;
+          case  '4':  digitalWrite(Fan_Pin, HIGH);delay(1500);                   break;
+          case  '5':  digitalWrite(Fan_Pin, LOW);delay(1500);                  break;
+          case  '6':  mp3_play (15);delay(1500);                  
                   while(1)
                   {
+                    MP3_Player();
                     Data_Read();
                     Date_Display();
                     Auto_Model();
                     if(Serial.available() > 0) 
                     state = Serial.read();
-                    if(state =='7')
+                    if(receivedChar =='7')
                     {
                       mp3_play (14);delay(1500);
                       digitalWrite(Fan_Pin, LOW);
@@ -273,25 +281,9 @@ void Blue_Model()
                       digitalWrite(Water_PUMP, LOW);
                       break;
                     } 
-                  }
+                  }               
+               
                   break;
-    } 
-  }
-    if(mySerial.available() > 0){ 
-      state = mySerial.read();
-      switch(state){
-        case  '0':  digitalWrite(LED_Pin, HIGH);delay(1500);    break;
-        case  '1':  digitalWrite(LED_Pin, LOW);delay(1500);   break;
-        case  '2':  digitalWrite(LED_Pin, HIGH);delay(1500);    break;
-        case  '3':  digitalWrite(LED_Pin, LOW);delay(1500);    break;
-        case  '4':  digitalWrite(Water_Pin, HIGH);delay(1500);    break;
-        case  '5':  digitalWrite(Water_Pin, LOW);delay(1500);    break;
-        case  '6':  mySerial.print("Light: ");mySerial.println(Light);    break;
-        case  '7':  mySerial.print("Rain: ");mySerial.println(Rain);    break;
-        case  '8':  mySerial.print("Water Level: ");mySerial.println(Water_level);    break;
-        case  '9':  mySerial.print("Soil: ");mySerial.println(Soil_Moisture);    break;
-        case  'a':  mySerial.print("Temp: ");mySerial.println(Temp);    break;
-        case  'b':  mySerial.print("humidity: ");mySerial.println(Humi);    break;
-      }
-  }
+    }
+    }
 }
